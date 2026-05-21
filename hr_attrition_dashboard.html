@@ -1,0 +1,83 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<script src='https://cdn.plot.ly/plotly-2.35.2.min.js'></script>
+<style>
+body { font-family: Arial, sans-serif; margin: 0; background: #f5f7fb; color: #1f2937; }
+.container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+.header { margin-bottom: 20px; }
+.header h1 { margin: 0; font-size: 32px; }
+.header p { margin: 6px 0 0 0; color: #6b7280; }
+.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+.card { background: white; border-radius: 16px; padding: 18px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+.kpi-title { color: #6b7280; font-size: 14px; }
+.kpi-value { font-size: 30px; font-weight: 700; margin-top: 8px; }
+.grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+.chart { height: 380px; }
+.note { margin-top: 18px; font-size: 14px; color: #4b5563; background: #eef2ff; padding: 14px; border-radius: 12px; }
+@media (max-width: 900px) { .kpis, .grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class='container'>
+<div class='header'>
+<h1>HR Attrition Dashboard</h1>
+<p>Interactive overview of attrition risk, employee mix, and likely retention pressure points.</p>
+</div>
+<div class='kpis' id='kpis'></div>
+<div class='grid'>
+<div class='card'><div id='dept_chart' class='chart'></div></div>
+<div class='card'><div id='role_chart' class='chart'></div></div>
+<div class='card'><div id='age_chart' class='chart'></div></div>
+<div class='card'><div id='overtime_chart' class='chart'></div></div>
+<div class='card'><div id='travel_chart' class='chart'></div></div>
+<div class='card'><div id='income_chart' class='chart'></div></div>
+</div>
+<div class='note'>Tip: hover over the charts for exact values, zoom where helpful, and use the legend or toolbar to explore patterns.</div>
+</div>
+<script>
+const kpis = [{"metric": "Employees", "value": 1480.0}, {"metric": "Attrition Rate", "value": 16.1}, {"metric": "Avg Monthly Income", "value": 6505.0}, {"metric": "Avg Age", "value": 36.9}];
+const deptData = [{"Department": "Human Resources", "Employees": 63, "AttritionRate": 19.0}, {"Department": "Research & Development", "Employees": 967, "AttritionRate": 13.8}, {"Department": "Sales", "Employees": 450, "AttritionRate": 20.7}];
+const roleData = [{"JobRole": "Sales Representative", "Employees": 84, "AttritionRate": 39.3}, {"JobRole": "Laboratory Technician", "Employees": 261, "AttritionRate": 23.8}, {"JobRole": "Human Resources", "Employees": 52, "AttritionRate": 23.1}, {"JobRole": "Sales Executive", "Employees": 329, "AttritionRate": 17.6}, {"JobRole": "Research Scientist", "Employees": 293, "AttritionRate": 16.0}, {"JobRole": "Healthcare Representative", "Employees": 132, "AttritionRate": 6.8}, {"JobRole": "Manufacturing Director", "Employees": 147, "AttritionRate": 6.8}, {"JobRole": "Manager", "Employees": 102, "AttritionRate": 4.9}, {"JobRole": "Research Director", "Employees": 80, "AttritionRate": 2.5}];
+const ageData = [{"AgeGroup": "18-25", "Employees": 123, "AttritionRate": 35.8}, {"AgeGroup": "26-35", "Employees": 611, "AttritionRate": 19.0}, {"AgeGroup": "36-45", "Employees": 471, "AttritionRate": 9.1}, {"AgeGroup": "46-55", "Employees": 228, "AttritionRate": 11.8}, {"AgeGroup": "55+", "Employees": 47, "AttritionRate": 17.0}];
+const overtimeData = [{"OverTime": "No", "Employees": 1062, "AttritionRate": 10.4}, {"OverTime": "Yes", "Employees": 418, "AttritionRate": 30.6}];
+const travelData = [{"BusinessTravel": "Non-Travel", "Employees": 151, "AttritionRate": 7.9}, {"BusinessTravel": "Travel_Frequently", "Employees": 279, "AttritionRate": 24.7}, {"BusinessTravel": "Travel_Rarely", "Employees": 1050, "AttritionRate": 15.0}];
+const incomeData = [{"SalarySlab": "Upto 5k", "Employees": 753, "AttritionRate": 21.6}, {"SalarySlab": "5k-10k", "Employees": 444, "AttritionRate": 11.0}, {"SalarySlab": "10k-15k", "Employees": 150, "AttritionRate": 14.0}, {"SalarySlab": "15k+", "Employees": 133, "AttritionRate": 3.8}];
+
+document.getElementById('kpis').innerHTML = kpis.map(function(row) {
+  let val = row.metric === 'Attrition Rate' ? row.value + '%' : row.value.toLocaleString();
+  return "<div class='card'><div class='kpi-title'>" + row.metric + "</div><div class='kpi-value'>" + val + "</div></div>";
+}).join('');
+
+const baseLayout = { paper_bgcolor: 'white', plot_bgcolor: 'white', margin: {l: 50, r: 20, t: 50, b: 60}, font: {color: '#1f2937'} };
+const config = {responsive: true, displayModeBar: true};
+
+Plotly.newPlot('dept_chart', [
+  {x: deptData.map(d => d.Department), y: deptData.map(d => d.AttritionRate), type: 'bar', marker: {color: ['#2563eb','#7c3aed','#14b8a6']}, text: deptData.map(d => d.AttritionRate + '%'), textposition: 'outside'}
+], {...baseLayout, title: 'Attrition Rate by Department', yaxis: {title: 'Attrition Rate %'}} , config);
+
+Plotly.newPlot('role_chart', [
+  {x: roleData.map(d => d.AttritionRate).slice(0,8).reverse(), y: roleData.map(d => d.JobRole).slice(0,8).reverse(), type: 'bar', orientation: 'h', marker: {color: '#ef4444'}, text: roleData.map(d => d.AttritionRate + '%').slice(0,8).reverse(), textposition: 'outside'}
+], {...baseLayout, title: 'Highest Attrition by Job Role', xaxis: {title: 'Attrition Rate %'}} , config);
+
+Plotly.newPlot('age_chart', [
+  {x: ageData.map(d => d.AgeGroup), y: ageData.map(d => d.AttritionRate), type: 'scatter', mode: 'lines+markers+text', line: {color: '#f59e0b', width: 4}, marker: {size: 10}, text: ageData.map(d => d.AttritionRate + '%'), textposition: 'top center'}
+], {...baseLayout, title: 'Attrition Rate by Age Group', yaxis: {title: 'Attrition Rate %'}} , config);
+
+Plotly.newPlot('overtime_chart', [
+  {labels: overtimeData.map(d => d.OverTime), values: overtimeData.map(d => d.Employees), type: 'pie', hole: 0.55, textinfo: 'label+percent', marker: {colors: ['#10b981', '#f97316']}}
+], {...baseLayout, title: 'Employee Mix by Overtime'} , config);
+
+Plotly.newPlot('travel_chart', [
+  {x: travelData.map(d => d.BusinessTravel), y: travelData.map(d => d.AttritionRate), type: 'bar', marker: {color: '#8b5cf6'}, text: travelData.map(d => d.AttritionRate + '%'), textposition: 'outside'}
+], {...baseLayout, title: 'Attrition Rate by Business Travel', yaxis: {title: 'Attrition Rate %'}} , config);
+
+Plotly.newPlot('income_chart', [
+  {x: incomeData.map(d => d.SalarySlab), y: incomeData.map(d => d.AttritionRate), type: 'bar', marker: {color: '#06b6d4'}, text: incomeData.map(d => d.AttritionRate + '%'), textposition: 'outside'}
+], {...baseLayout, title: 'Attrition Rate by Salary Slab', yaxis: {title: 'Attrition Rate %'}} , config);
+</script>
+</body>
+</html>
